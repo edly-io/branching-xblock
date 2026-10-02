@@ -123,4 +123,18 @@ describe("makeXBlockInitializer", () => {
     expect(Array.from(document.head.querySelectorAll("link[rel='stylesheet']")).map((l) => l.getAttribute("href")))
       .toEqual([CORE, LIGHT, OWN]);
   });
+
+  it("carries the document's text direction into the shadow tree", async () => {
+    document.documentElement.dir = "rtl";
+    const { block, host } = makeBlock();
+
+    try {
+      initialize(runtime, block, { label: "hi" });
+      await waitFor(() => expect(inShadow(host, "[data-testid='hello']")).not.toBeNull());
+
+      expect(inShadow(host, ".bx-shadow-container")!.getAttribute("dir")).toBe("rtl");
+    } finally {
+      document.documentElement.removeAttribute("dir");
+    }
+  });
 });

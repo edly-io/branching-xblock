@@ -151,6 +151,12 @@ export function makeXBlockInitializer<P>(
       .finally(() => {
         const container = document.createElement("div");
         container.className = "bx-shadow-container";
+        // Paragon's RTL rules key off `[dir=rtl]` on an ancestor, and <html>
+        // is outside the shadow tree.
+        const dir = document.documentElement.dir || document.body.dir;
+        if (dir) {
+          container.dir = dir;
+        }
         shadowRoot.appendChild(container);
         observeContentSize(container);
         renderApp(container, app);
