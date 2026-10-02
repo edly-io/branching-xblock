@@ -27,6 +27,8 @@ function propsFactory(runtime: XBlockRuntime, _element: XBlockElementLike, data:
   };
 }
 
-export const BranchingStudioEditor = makeXBlockInitializer(StudioApp, propsFactory);
+// The editor opens on its own Studio page, so there are no other blocks for
+// its styles to leak into, and it relies on Studio's modal-editor styles.
+export const BranchingStudioEditor = makeXBlockInitializer(StudioApp, propsFactory, { isolateStyles: false });
 
 (window as unknown as Record<string, unknown>).BranchingStudioEditor = BranchingStudioEditor;

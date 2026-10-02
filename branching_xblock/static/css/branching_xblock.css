@@ -9,14 +9,6 @@
   --pgn-color-bx-btn-primary-hover: var(--pgn-color-primary-base, #0c4f83);
 }
 
-.branching_xblock_block .count {
-    font-weight: bold;
-}
-
-.branching_xblock_block p {
-    cursor: pointer;
-}
-
 .branching-scenario .node-content {
     padding: 1em 1em;
 }
