@@ -1,6 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { SharedIntlProvider } from "./i18n";
+import { injectStyles } from "./shadowStyles";
+import { notifyHostRemeasure } from "./notifyHostRemeasure";
 
 export type XBlockElementLike = Element | { 0?: Element; length?: number; jquery?: string };
 
@@ -71,24 +73,28 @@ async function getParagonStyles(mfeConfigApi?: string): Promise<string[]> {
   }
 }
 
-function appendStylesheet(url: string): void {
-  if (document.head.querySelector(`link[href="${url}"]`)) {
-    return;
-  }
+// Paragon's reboot styles `body`, which doesn't exist inside the shadow tree;
+// apply the same base typography to the host so the block looks as before.
+const SHADOW_BASE_CSS = [
+  ":host{display:block;font-family:var(--pgn-typography-font-family-base);",
+  "font-size:var(--pgn-typography-font-size-base);font-weight:var(--pgn-typography-font-weight-base);",
+  "line-height:var(--pgn-typography-line-height-base);color:var(--pgn-color-body-base);text-align:left}",
+  ".bx-shadow-container{display:flex;flex-direction:column;flex-grow:1;min-height:100%}",
+].join("");
 
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href = url;
-  document.head.appendChild(link);
+async function loadStyles(shadowRoot: ShadowRoot, data: unknown): Promise<void> {
+  const payload = (data || {}) as XBlockPayloadBase;
+  const paragonStyleUrls = await getParagonStyles(payload.mfe_config_api);
+  await injectStyles(shadowRoot, [...paragonStyleUrls, ...(payload.style_urls || [])], SHADOW_BASE_CSS);
 }
 
-async function loadStyles(data: unknown): Promise<void> {
-  const payload = (data || {}) as XBlockPayloadBase;
-  const styleUrls = payload.style_urls || [];
-
-  const paragonStyleUrls = await getParagonStyles(payload.mfe_config_api);
-
-  [...paragonStyleUrls, ...styleUrls].forEach(appendStylesheet);
+// The Studio preview iframe resizes on DOM mutations, which it can't see
+// inside a shadow tree, so report size changes ourselves.
+function observeContentSize(container: Element): void {
+  if (typeof ResizeObserver === "undefined") {
+    return;
+  }
+  new ResizeObserver(() => notifyHostRemeasure()).observe(container);
 }
 
 export function makeXBlockInitializer<P>(
@@ -97,11 +103,16 @@ export function makeXBlockInitializer<P>(
 ) {
   return function initializer(runtime: XBlockRuntime, element: XBlockElementLike, data: unknown): void {
     const el = toDomElement(element);
-    const mountNode = el.querySelector('[data-react-root="true"]') || el;
+    const host = el.querySelector('[data-react-root="true"]') || el;
+    const shadowRoot = host.shadowRoot || host.attachShadow({ mode: "open" });
     const props = propsFactory(runtime, element, data);
     const app = React.createElement(AppComponent as React.ComponentType<any>, props as any);
-    void loadStyles(data).finally(() => {
-      createRoot(mountNode).render(
+    void loadStyles(shadowRoot, data).finally(() => {
+      const container = document.createElement("div");
+      container.className = "bx-shadow-container";
+      shadowRoot.appendChild(container);
+      observeContentSize(container);
+      createRoot(container).render(
         React.createElement(
           SharedIntlProvider,
           null,
