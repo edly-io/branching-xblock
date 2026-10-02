@@ -1104,25 +1104,6 @@ def test_studio_view_passes_authoring_help_html_in_init_data(block):
     assert calls["init_data"]["meta"]["authoring_help_html"] == "<p>Help</p>"
 
 
-def test_studio_view_marks_shadow_host_as_editor_with_buttons(block):
-    """
-    Studio looks up `.editor-with-buttons` in the light DOM to hide its own
-    modal buttons; the React editor renders inside a shadow root, so the
-    marker must be on the host element.
-    """
-    with mock.patch(
-        "branching_xblock.branching_xblock.get_site_configuration_value",
-        return_value="",
-    ), mock.patch.object(
-        block.runtime,
-        "local_resource_url",
-        return_value="http://example.com/studio.js",
-    ):
-        frag = block.studio_view({})
-
-    assert '<div class="editor-with-buttons" data-react-root="true"></div>' in frag.content
-
-
 def test_studio_view_includes_enable_reset_activity_in_init_data(block):
     calls = {}
 

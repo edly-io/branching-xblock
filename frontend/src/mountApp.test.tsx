@@ -107,4 +107,20 @@ describe("makeXBlockInitializer", () => {
       global.ResizeObserver = original;
     }
   });
+
+  it("renders in the light DOM and links styles in document.head when isolateStyles is false", async () => {
+    const initializeEditor = makeXBlockInitializer(
+      Hello,
+      (_runtime, _element, data) => ({ label: (data as { label: string }).label }),
+      { isolateStyles: false },
+    );
+    const { block, host } = makeBlock();
+
+    initializeEditor(runtime, block, { label: "hi", style_urls: [OWN] });
+
+    await waitFor(() => expect(host.querySelector("[data-testid='hello']")).not.toBeNull());
+    expect(host.shadowRoot).toBeNull();
+    expect(Array.from(document.head.querySelectorAll("link[rel='stylesheet']")).map((l) => l.getAttribute("href")))
+      .toEqual([CORE, LIGHT, OWN]);
+  });
 });

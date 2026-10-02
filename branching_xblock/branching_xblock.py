@@ -864,7 +864,7 @@ class BranchingXBlock(XBlock):
         Studio editor view shown to course authors.
         """
         self._migrate_and_save_legacy_nodes()
-        frag = Fragment('<div class="editor-with-buttons" data-react-root="true"></div>')
+        frag = Fragment('<div data-react-root="true"></div>')
         frag.add_javascript_url(self.runtime.local_resource_url(self, "static/bundles/studio.js"))
 
         authoring_help_html = sanitize_html(

@@ -82,10 +82,21 @@ const SHADOW_BASE_CSS = [
   ".bx-shadow-container{display:flex;flex-direction:column;flex-grow:1;min-height:100%}",
 ].join("");
 
-async function loadStyles(shadowRoot: ShadowRoot, data: unknown): Promise<void> {
+async function getStyleUrls(data: unknown): Promise<string[]> {
   const payload = (data || {}) as XBlockPayloadBase;
   const paragonStyleUrls = await getParagonStyles(payload.mfe_config_api);
-  await injectStyles(shadowRoot, [...paragonStyleUrls, ...(payload.style_urls || [])], SHADOW_BASE_CSS);
+  return [...paragonStyleUrls, ...(payload.style_urls || [])];
+}
+
+function appendStylesheet(url: string): void {
+  if (document.head.querySelector(`link[href="${url}"]`)) {
+    return;
+  }
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = url;
+  document.head.appendChild(link);
 }
 
 // The Studio preview iframe resizes on DOM mutations, which it can't see
@@ -97,28 +108,52 @@ function observeContentSize(container: Element): void {
   new ResizeObserver(() => notifyHostRemeasure()).observe(container);
 }
 
+export interface MountOptions {
+  /**
+   * Render inside a shadow root with the stylesheets scoped to it (default).
+   * The Studio editor opts out: it runs on its own page, and its form controls
+   * are meant to pick up Studio's modal-editor styles.
+   */
+  isolateStyles?: boolean;
+}
+
+function renderApp(container: Element, app: React.ReactElement): void {
+  createRoot(container).render(
+    React.createElement(
+      SharedIntlProvider,
+      null,
+      app,
+    ),
+  );
+}
+
 export function makeXBlockInitializer<P>(
   AppComponent: React.ComponentType<P>,
   propsFactory: (runtime: XBlockRuntime, element: XBlockElementLike, data: unknown) => P,
+  options: MountOptions = {},
 ) {
   return function initializer(runtime: XBlockRuntime, element: XBlockElementLike, data: unknown): void {
     const el = toDomElement(element);
     const host = el.querySelector('[data-react-root="true"]') || el;
-    const shadowRoot = host.shadowRoot || host.attachShadow({ mode: "open" });
     const props = propsFactory(runtime, element, data);
     const app = React.createElement(AppComponent as React.ComponentType<any>, props as any);
-    void loadStyles(shadowRoot, data).finally(() => {
-      const container = document.createElement("div");
-      container.className = "bx-shadow-container";
-      shadowRoot.appendChild(container);
-      observeContentSize(container);
-      createRoot(container).render(
-        React.createElement(
-          SharedIntlProvider,
-          null,
-          app,
-        ),
-      );
-    });
+
+    if (options.isolateStyles === false) {
+      void getStyleUrls(data)
+        .then((urls) => urls.forEach(appendStylesheet))
+        .finally(() => renderApp(host, app));
+      return;
+    }
+
+    const shadowRoot = host.shadowRoot || host.attachShadow({ mode: "open" });
+    void getStyleUrls(data)
+      .then((urls) => injectStyles(shadowRoot, urls, SHADOW_BASE_CSS))
+      .finally(() => {
+        const container = document.createElement("div");
+        container.className = "bx-shadow-container";
+        shadowRoot.appendChild(container);
+        observeContentSize(container);
+        renderApp(container, app);
+      });
   };
 }
