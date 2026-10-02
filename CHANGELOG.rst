@@ -14,7 +14,12 @@ Change Log
 Unreleased
 **********
 
-*
+Fixed
+=====
+
+* The block's Paragon styles no longer leak into the rest of the page and
+  restyle other blocks in Studio and the LMS; the learner view now renders
+  inside a Shadow DOM.
 
 0.3.3 – 2026-09-21
 **********************************************
