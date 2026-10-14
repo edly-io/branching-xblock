@@ -34,6 +34,12 @@ interface ThemeUrls {
 export interface XBlockPayloadBase {
   mfe_config_api?: string;
   style_urls?: string[];
+  /**
+   * False when the site's theme styles the block: render in the light DOM
+   * with the block's own CSS only, and no Paragon, which would restyle the
+   * rest of the page.
+   */
+  isolate_styles?: boolean;
 }
 
 const PARAGON_CORE_CSS = "https://cdn.jsdelivr.net/npm/@openedx/paragon@23/dist/core.min.css";
@@ -137,6 +143,12 @@ export function makeXBlockInitializer<P>(
     const host = el.querySelector('[data-react-root="true"]') || el;
     const props = propsFactory(runtime, element, data);
     const app = React.createElement(AppComponent as React.ComponentType<any>, props as any);
+
+    if ((data as XBlockPayloadBase | undefined)?.isolate_styles === false) {
+      ((data as XBlockPayloadBase).style_urls || []).forEach(appendStylesheet);
+      renderApp(host, app);
+      return;
+    }
 
     if (options.isolateStyles === false) {
       void getStyleUrls(data)

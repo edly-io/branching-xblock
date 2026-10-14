@@ -81,6 +81,20 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
 
       <Form.Group className="bx-field">
         <Form.Label className="bx-field__label">
+          {intl.formatMessage(studioMessages.nodeTitle)}
+        </Form.Label>
+        <Form.Control
+          type="text"
+          className="bx-input"
+          data-role="node-title"
+          value={node.title}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateField(node.id, "title", e.target.value)}
+        />
+        <div className="bx-help">{intl.formatMessage(studioMessages.nodeTitleHelp)}</div>
+      </Form.Group>
+
+      <Form.Group className="bx-field">
+        <Form.Label className="bx-field__label">
           {intl.formatMessage(studioMessages.content)}
         </Form.Label>
         <Form.Control
@@ -90,6 +104,24 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
           value={node.content}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onUpdateField(node.id, "content", e.target.value)}
         />
+      </Form.Group>
+
+      <Form.Group className="bx-field">
+        <Form.Label className="bx-field__label">
+          {intl.formatMessage(studioMessages.outcome)}
+        </Form.Label>
+        <Form.Control
+          as="select"
+          className="bx-select"
+          data-role="node-outcome"
+          value={node.outcome}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onUpdateField(node.id, "outcome", e.target.value)}
+        >
+          <option value="">{intl.formatMessage(studioMessages.outcomeNone)}</option>
+          <option value="positive">{intl.formatMessage(studioMessages.outcomePositive)}</option>
+          <option value="retry">{intl.formatMessage(studioMessages.outcomeRetry)}</option>
+        </Form.Control>
+        <div className="bx-help">{intl.formatMessage(studioMessages.outcomeHelp)}</div>
       </Form.Group>
 
       <Form.Group className="bx-field">

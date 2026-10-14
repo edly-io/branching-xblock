@@ -1710,3 +1710,64 @@ def test_strip_html_hardening():
     assert _strip_html("<p>foo</p><p>bar</p>") == "foo bar"
     assert _strip_html("see https://example.com <!-- hidden -->") == "see https://example.com"
     assert _strip_html(None) == ""
+
+
+def test_studio_submit_round_trips_title_and_outcome(rf, block):
+    """Node title and outcome survive a save; an unknown outcome is dropped."""
+    payload = {
+        "nodes": [
+            {"id": "temp-1", "title": "  Good choice ", "content": "Well done", "outcome": "positive", "choices": []},
+            {"id": "temp-2", "title": "", "content": "Hmm", "outcome": "bogus", "choices": []},
+        ],
+        "enable_undo": False,
+        "enable_scoring": False,
+    }
+    req = rf.post("/", data=json.dumps(payload), content_type="application/json")
+    result = json.loads(block.studio_submit(req).body.decode("utf-8"))
+
+    assert result["result"] == "success"
+    first, second = block.scenario_data["nodes"].values()
+    assert (first["title"], first["outcome"]) == ("Good choice", "positive")
+    assert (second["title"], second["outcome"]) == ("", "")
+
+
+def test_last_choice_text_is_recorded_without_scoring(rf, block):
+    """Outcome screens show the learner's last choice even with scoring off; undo clears it."""
+    block.scenario_data = {
+        "nodes": {
+            "A": {"id": "A", "choices": [{"text": "Stay calm", "target_node_id": "B", "score": 0}]},
+            "B": {"id": "B", "outcome": "retry", "choices": []},
+        },
+        "start_node_id": "A",
+    }
+    block.enable_undo = True
+    post = lambda: rf.post("/", data=json.dumps({"choice_index": 0}), content_type="application/json")
+
+    result = json.loads(block.select_choice(post()).body.decode("utf-8"))
+    assert result["last_choice_text"] == "Stay calm"
+    assert block.score_history == []
+
+    result = json.loads(block.undo_choice(post()).body.decode("utf-8"))
+    assert result["last_choice_text"] == ""
+
+
+@pytest.mark.parametrize("block_settings, expected", [({}, True), ({"ISOLATE_STYLES": False}, False)])
+def test_student_view_passes_isolate_styles(block, settings, block_settings, expected):
+    """The learner view is isolated unless XBLOCK_SETTINGS opts out."""
+    settings.XBLOCK_SETTINGS = {"BranchingXBlock": block_settings}
+    calls = {}
+
+    def fake_initialize_js(_self, name, init_data):
+        calls["init_data"] = init_data
+
+    with mock.patch(
+        "branching_xblock.branching_xblock.Fragment.initialize_js",
+        autospec=True,
+        side_effect=fake_initialize_js,
+    ), mock.patch.object(
+        block.runtime, "local_resource_url", return_value="/block.css",
+    ):
+        block.student_view({})
+
+    assert calls["init_data"]["isolate_styles"] is expected
+    assert calls["init_data"]["style_urls"] == ["/block.css"]

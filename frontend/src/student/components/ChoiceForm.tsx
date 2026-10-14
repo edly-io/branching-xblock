@@ -10,9 +10,12 @@ interface ChoiceFormProps {
   choices: Choice[];
   nodeId: string;
   onSubmit: (choiceIndex: number) => void;
+  // True while a choice is being submitted: a second tap would be applied to
+  // the next node and skip it.
+  disabled?: boolean;
 }
 
-const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit }) => {
+const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit, disabled = false }) => {
   const intl = useIntl();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const hasChoices = choices.length > 0;
@@ -20,6 +23,25 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit }) =>
   useEffect(() => {
     setSelectedIndex(null);
   }, [nodeId]);
+
+  // A lone choice ("Next", "Continue") has nothing to pick between, so it is
+  // just the button that follows it.
+  if (choices.length === 1) {
+    return (
+      <div className="choices choices--single" data-role="choices">
+        <Button
+          type="button"
+          variant="primary"
+          className="choice-submit-button action-primary btn-primary"
+          data-role="submit-choice"
+          disabled={disabled}
+          onClick={() => onSubmit(0)}
+        >
+          {choices[0].text || intl.formatMessage(studentMessages.next)}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="choices" data-role="choices">
@@ -54,7 +76,7 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit }) =>
             variant="primary"
             className="choice-submit-button action-primary btn-primary"
             data-role="submit-choice"
-            disabled={selectedIndex === null}
+            disabled={disabled || selectedIndex === null}
           >
             {intl.formatMessage(studentMessages.submit)}
           </Button>

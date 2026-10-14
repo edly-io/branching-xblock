@@ -31,6 +31,7 @@ export interface StudentInitialState {
   max_score: number;
   current_node: Node | null;
   history: string[];
+  last_choice_text: string;
   score: number;
   grade_report: GradeReport;
 }

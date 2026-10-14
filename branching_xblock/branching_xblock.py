@@ -45,7 +45,9 @@ def _default_node(**overrides):
     """
     node = {
         "id": "",
+        "title": "",
         "content": "",
+        "outcome": "",
         "media": {"type": "", "url": "", "alt": ""},
         "left_image_url": "",
         "right_image_url": "",
@@ -59,6 +61,8 @@ def _default_node(**overrides):
     node.update(overrides)
     return node
 
+
+NODE_OUTCOMES = ("positive", "retry")
 
 IMPORT_TEMPLATE_NODES = (
     _default_node(
@@ -803,8 +807,10 @@ class BranchingXBlock(XBlock):
         for node in node_values:
             if not isinstance(node, dict):
                 continue
-            # Narrative body, choice labels and authored alt text only. Hints, feedback,
-            # overlay_text (a flag), URLs, ids, and scores are intentionally excluded
+            # Titles, narrative body, choice labels and authored alt text only. Hints,
+            # feedback, overlay_text (a flag), URLs, ids, and scores are intentionally excluded
+            if node.get("title"):
+                parts.append(str(node["title"]))
             if node.get("content"):
                 parts.append(_strip_html(str(node["content"])))
             choices = node.get("choices")
@@ -838,6 +844,19 @@ class BranchingXBlock(XBlock):
         root_url = getattr(settings, "LMS_ROOT_URL", "") or ""
         return f"{root_url}/api/mfe_config/v1?mfe=learning" if root_url else ""
 
+    @staticmethod
+    def _isolate_student_styles() -> bool:
+        """
+        Whether the learner view renders in a shadow root with Paragon (default).
+
+        A site whose theme styles the block sets
+        ``XBLOCK_SETTINGS["BranchingXBlock"]["ISOLATE_STYLES"] = False``: the
+        view then renders in the page with only the block's own CSS, so the
+        theme's CSS reaches it like any other block.
+        """
+        block_settings = getattr(settings, "XBLOCK_SETTINGS", {}).get("BranchingXBlock", {})
+        return bool(block_settings.get("ISOLATE_STYLES", True))
+
     def student_view(self, context: Optional[dict[str, Any]] = None) -> Fragment:
         """
         Create primary view of the BranchingXBlock, shown to students when viewing courses.
@@ -856,6 +875,7 @@ class BranchingXBlock(XBlock):
             "style_urls": [
                 self.runtime.local_resource_url(self, "static/css/branching_xblock.css"),
             ],
+            "isolate_styles": self._isolate_student_styles(),
         })
         return frag
 
@@ -946,6 +966,7 @@ class BranchingXBlock(XBlock):
             "history":         list(self.history),
             "score_history":   list(self.score_history),
             "choice_history":  list(self.choice_history),
+            "last_choice_text": self.choice_history[-1].get("choice_text", "") if self.choice_history else "",
             "has_completed":   bool(self.has_completed),
             "score":           self._current_score(),
             "grade_report":    self._build_grade_report(),
@@ -983,11 +1004,12 @@ class BranchingXBlock(XBlock):
             if awarded_points is None:
                 return {"success": False, "error": "Invalid choice score"}
             self.score_history.append(awarded_points)
-            self.choice_history.append({
-                "source_node_id": self.current_node_id,
-                "choice_text": (choice.get("text") or "").strip(),
-                "awarded_points": awarded_points,
-            })
+        # Recorded with scoring off too: outcome screens show the last choice.
+        self.choice_history.append({
+            "source_node_id": self.current_node_id,
+            "choice_text": (choice.get("text") or "").strip(),
+            "awarded_points": awarded_points,
+        })
 
         if self.enable_undo:
             self.history.append(self.current_node_id)
@@ -1011,11 +1033,11 @@ class BranchingXBlock(XBlock):
         prev_node_id = self.history.pop()
         self.current_node_id = prev_node_id
 
+        if self.choice_history:
+            self.choice_history.pop()
         if self.enable_scoring:
             if self.score_history:
                 self.score_history.pop()
-            if self.choice_history:
-                self.choice_history.pop()
             self.publish_grade()
 
         self.has_completed = False
@@ -1061,7 +1083,9 @@ class BranchingXBlock(XBlock):
                 id_map[old_id] = new_id
             node = _default_node(
                 id=new_id,
+                title=raw.get('title', ''),
                 content=raw.get('content', ''),
+                outcome=raw.get('outcome', ''),
                 media={
                     'type': raw.get('media', {}).get('type', ''),
                     'url': raw.get('media', {}).get('url', ''),
@@ -1304,7 +1328,9 @@ class BranchingXBlock(XBlock):
 
             final_node = _default_node(
                 id=node['id'],
+                title=str(node.get('title') or '').strip(),
                 content=sanitize_html(node['content']),
+                outcome=node['outcome'] if node.get('outcome') in NODE_OUTCOMES else '',
                 media=node['media'],
                 choices=cleaned_choices,
                 hint=_clean_hint(node.get('hint')),

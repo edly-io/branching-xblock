@@ -8,6 +8,7 @@ interface ActionButtonsProps {
   showReset: boolean;
   showReport: boolean;
   hasChoices: boolean;
+  isRetry: boolean;
   onUndo: () => void;
   onReset: () => void;
   onShowReport: () => void;
@@ -18,6 +19,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   showReset,
   showReport,
   hasChoices,
+  isRetry,
   onUndo,
   onReset,
   onShowReport,
@@ -36,7 +38,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           disabled={!canUndo}
           onClick={onUndo}
         >
-          {intl.formatMessage(studentMessages.goBack)}
+          {intl.formatMessage(isRetry ? studentMessages.backToScenario : studentMessages.goBack)}
         </Button>
         {showReset && (
           <Button

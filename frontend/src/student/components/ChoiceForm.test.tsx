@@ -29,4 +29,25 @@ describe("ChoiceForm", () => {
     expect(screen.getByLabelText("Continue")).not.toBeChecked();
     expect(screen.getByRole("button", { name: "Submit" })).toBeDisabled();
   });
+
+  it("renders a lone choice as a button that submits it", () => {
+    const onSubmit = jest.fn();
+    render(
+      <ChoiceForm choices={[{ text: "Next", target_node_id: "node-2", score: 0 }]} nodeId="node-1" onSubmit={onSubmit} />
+    );
+
+    expect(screen.queryByRole("radio")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(onSubmit).toHaveBeenCalledWith(0);
+  });
+
+  it("disables the lone choice while a choice is being submitted", () => {
+    const onSubmit = jest.fn();
+    render(
+      <ChoiceForm choices={[{ text: "Next", target_node_id: "node-2", score: 0 }]} nodeId="node-1" onSubmit={onSubmit} disabled />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
 });
