@@ -34,7 +34,9 @@ export interface Media {
  */
 export interface Node {
   id?: string;
+  title?: string;
   content?: string;
+  outcome?: string;
   media?: Media;
   choices?: Choice[];
   hint?: string;

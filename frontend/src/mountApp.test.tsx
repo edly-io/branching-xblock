@@ -124,6 +124,18 @@ describe("makeXBlockInitializer", () => {
       .toEqual([CORE, LIGHT, OWN]);
   });
 
+  it("renders in the light DOM with only the block's css when the payload opts out of isolation", async () => {
+    const initialize = makeXBlockInitializer(Hello, (_runtime, _element, data) => ({ label: (data as { label: string }).label }));
+    const { block, host } = makeBlock();
+
+    initialize(runtime, block, { label: "hi", style_urls: [OWN], isolate_styles: false });
+
+    await waitFor(() => expect(host.querySelector("[data-testid='hello']")).not.toBeNull());
+    expect(host.shadowRoot).toBeNull();
+    expect(Array.from(document.head.querySelectorAll("link[rel='stylesheet']")).map((l) => l.getAttribute("href")))
+      .toEqual([OWN]);
+  });
+
   it("carries the document's text direction into the shadow tree", async () => {
     document.documentElement.dir = "rtl";
     const { block, host } = makeBlock();

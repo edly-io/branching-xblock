@@ -13,6 +13,41 @@
     padding: 1em 1em;
 }
 
+.branching-scenario .node-title {
+    margin: 0;
+    padding: 1rem 1rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--pgn-color-gray-900, #1f2a37);
+}
+
+.branching-scenario .node-outcome-mark {
+    padding: 1rem 1rem 0;
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--pgn-color-bx-grade-pass, #178253);
+}
+
+.branching-scenario .node-outcome-mark--retry {
+    color: var(--pgn-color-warning-base, #b4610e);
+}
+
+.branching-scenario .node-last-choice {
+    margin: 0 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: var(--pgn-color-light-200, #f3f3f3);
+}
+
+.branching-scenario .node-last-choice__label {
+    font-weight: 600;
+}
+
+.branching-scenario .choices--single {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .branching-scenario .node-media {
     padding: 0 1em;
     display: flex;

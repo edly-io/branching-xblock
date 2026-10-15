@@ -109,7 +109,9 @@ const StudioApp: React.FC<StudioAppProps> = ({ handlerUrls, initial_state, meta,
     const payload: SavePayload = {
       nodes: state.draftNodes.map((n) => ({
         id: n.id,
+        title: (n.title || "").trim(),
         content: (n.content || "").trim(),
+        outcome: n.outcome || "",
         media: {
           // Composite ("image") uses left/right + background, not media.url, so blank it.
           // Single image / video / audio keep media.url; only single image keeps alt.

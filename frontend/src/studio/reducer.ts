@@ -11,7 +11,9 @@ export interface DraftChoice {
 
 export interface DraftNode {
   id: string;
+  title: string;
   content: string;
+  outcome: string;
   media: { type: string; url: string; alt: string };
   choices: DraftChoice[];
   no_branches: boolean;
@@ -98,7 +100,9 @@ export function buildDraftNode(raw: Record<string, unknown> | undefined): DraftN
     : [];
   return {
     id: (raw?.id as string) || uniqueId(),
+    title: (raw?.title as string) || "",
     content: (raw?.content as string) || "",
+    outcome: (raw?.outcome as string) || "",
     media: {
       type: (media.type as string) || "",
       url: (media.url as string) || "",

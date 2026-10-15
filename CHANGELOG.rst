@@ -14,6 +14,25 @@ Change Log
 Unreleased
 **********
 
+Added
+=====
+
+* Nodes have an optional plain-text title, shown as a heading above the content.
+* Nodes have an optional outcome ("Good choice" or "Try again"). An outcome
+  node shows a status mark and the learner's last choice, and a "Try again"
+  node turns the Go Back button into "Back to the scenario".
+* A node with a single choice shows it as one button instead of a radio list
+  and a Submit button.
+* ``XBLOCK_SETTINGS["BranchingXBlock"]["ISOLATE_STYLES"] = False`` renders the
+  learner view in the page, without the shadow root and Paragon, for sites
+  whose theme styles the block.
+
+Changed
+=======
+
+* The learner's choices are recorded with scoring off too, so outcome nodes
+  can show them.
+
 Fixed
 =====
 

@@ -34,7 +34,9 @@ class Node(BaseModel):
     """A single node in the branching scenario graph."""
 
     id: str = ""
+    title: str = ""  # Plain-text heading shown above the content
     content: str = ""
+    outcome: str = ""  # "", "positive" (good choice) or "retry" (try again)
     media: Media = Field(default_factory=Media)
     choices: list[Choice] = Field(default_factory=list)
     hint: str = ""

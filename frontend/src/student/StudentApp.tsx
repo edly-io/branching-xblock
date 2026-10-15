@@ -105,12 +105,14 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
   const canUndo = Boolean(state.enable_undo && state.history.length > 0);
   const hasChoices = choices.length > 0;
   const showScore = !showReport && isLeaf && state.enable_scoring;
+  const outcome = node.outcome || "";
+  const lastChoiceText = outcome ? state.last_choice_text || "" : "";
   const showTranscript = Boolean(
     (media.type === "audio" || media.type === "video") && node.transcript_url
   );
 
   return (
-    <div className="branching-scenario">
+    <div className={`branching-scenario${outcome ? ` branching-scenario--outcome-${outcome}` : ""}`}>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {statusMessage}
       </div>
@@ -119,8 +121,20 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
 
         {!showReport && (
           <>
+            {outcome && (
+              <div className={`node-outcome-mark node-outcome-mark--${outcome}`} aria-hidden="true">
+                <span className={`fa ${outcome === "retry" ? "fa-refresh" : "fa-check-circle"}`} />
+              </div>
+            )}
+            {node.title && <h3 className="node-title" data-role="title">{node.title}</h3>}
             {overlayEnabled ? null : (
               <ContentDisplay contentHtml={contentHtml} />
+            )}
+            {lastChoiceText && (
+              <div className="node-last-choice" data-role="last-choice">
+                <div className="node-last-choice__label">{intl.formatMessage(studentMessages.youChose)}</div>
+                <div className="node-last-choice__text">{lastChoiceText}</div>
+              </div>
             )}
             <MediaDisplay
               node={node}
@@ -136,7 +150,7 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
         )}
 
         {!showReport && (
-          <ChoiceForm choices={choices} nodeId={nodeId} onSubmit={handleSelectChoice} />
+          <ChoiceForm choices={choices} nodeId={nodeId} onSubmit={handleSelectChoice} disabled={loading} />
         )}
 
         {!showReport && (
@@ -145,6 +159,7 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
             showReset={showReset}
             showReport={showReportButton}
             hasChoices={hasChoices}
+            isRetry={outcome === "retry"}
             onUndo={handleUndo}
             onReset={handleReset}
             onShowReport={handleShowReport}

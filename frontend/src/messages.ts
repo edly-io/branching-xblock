@@ -117,6 +117,18 @@ export const studentMessages = defineMessages({
     id: "branching.student.contentUpdated",
     defaultMessage: "Content updated.",
   },
+  youChose: {
+    id: "branching.student.youChose",
+    defaultMessage: "You chose",
+  },
+  backToScenario: {
+    id: "branching.student.backToScenario",
+    defaultMessage: "Back to the scenario",
+  },
+  next: {
+    id: "branching.student.next",
+    defaultMessage: "Next",
+  },
 });
 
 export const studioMessages = defineMessages({
@@ -287,6 +299,34 @@ export const studioMessages = defineMessages({
   hint: {
     id: "branching.studio.hint",
     defaultMessage: "Hint",
+  },
+  nodeTitle: {
+    id: "branching.studio.nodeTitle",
+    defaultMessage: "Title",
+  },
+  nodeTitleHelp: {
+    id: "branching.studio.nodeTitleHelp",
+    defaultMessage: "Optional heading shown above the content, e.g. \"How could you respond?\" or \"Good choice\".",
+  },
+  outcome: {
+    id: "branching.studio.outcome",
+    defaultMessage: "Outcome",
+  },
+  outcomeNone: {
+    id: "branching.studio.outcomeNone",
+    defaultMessage: "None",
+  },
+  outcomePositive: {
+    id: "branching.studio.outcomePositive",
+    defaultMessage: "Good choice",
+  },
+  outcomeRetry: {
+    id: "branching.studio.outcomeRetry",
+    defaultMessage: "Try again",
+  },
+  outcomeHelp: {
+    id: "branching.studio.outcomeHelp",
+    defaultMessage: "Marks this node as the result of the previous choice: it shows a status mark and the learner's choice. \"Try again\" offers a button back to the scenario when undo is enabled.",
   },
   choices: {
     id: "branching.studio.choices",
