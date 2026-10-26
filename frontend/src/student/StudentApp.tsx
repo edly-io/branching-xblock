@@ -156,6 +156,7 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
         {!showReport && (
           <ActionButtons
             canUndo={canUndo}
+            hasHistory={state.history.length > 0}
             showReset={showReset}
             showReport={showReportButton}
             hasChoices={hasChoices}

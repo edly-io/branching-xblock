@@ -5,6 +5,7 @@ import { studentMessages } from "../../messages";
 
 interface ActionButtonsProps {
   canUndo: boolean;
+  hasHistory: boolean;
   showReset: boolean;
   showReport: boolean;
   hasChoices: boolean;
@@ -16,6 +17,7 @@ interface ActionButtonsProps {
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
   canUndo,
+  hasHistory,
   showReset,
   showReport,
   hasChoices,
@@ -25,21 +27,23 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   onShowReport,
 }) => {
   const intl = useIntl();
-  const showActions = hasChoices || canUndo || showReset || showReport;
+  const showActions = hasChoices || canUndo || hasHistory || showReset || showReport;
 
   return (
     <div className="choice-actions" style={{ display: showActions ? "flex" : "none" }}>
       <div className="choice-actions__secondary">
-        <Button
-          type="button"
-          variant="outline-primary"
-          className={`undo-button action-secondary btn-secondary${!canUndo ? " is-disabled" : ""}`}
-          data-role="undo"
-          disabled={!canUndo}
-          onClick={onUndo}
-        >
-          {intl.formatMessage(isRetry ? studentMessages.backToScenario : studentMessages.goBack)}
-        </Button>
+        {(canUndo || hasHistory) && (
+          <Button
+            type="button"
+            variant="outline-primary"
+            className={`undo-button action-secondary btn-secondary${!canUndo ? " is-disabled" : ""}`}
+            data-role="undo"
+            disabled={!canUndo}
+            onClick={onUndo}
+          >
+            {intl.formatMessage(isRetry ? studentMessages.backToScenario : studentMessages.goBack)}
+          </Button>
+        )}
         {showReset && (
           <Button
             type="button"
