@@ -85,8 +85,8 @@
 .branching-editor-step .bx-input.is-error,
 .branching-editor-step .bx-select.is-error,
 .choice-row .choice-target.is-error {
-    border-color: var(--pgn-color-danger-base, #d23228);
-    box-shadow: inset 0 0 0 1px var(--pgn-color-danger-base, #d23228);
+    border: 1px solid var(--pgn-color-danger-base, #d23228) !important;
+    box-shadow: 0 0 0 2px rgba(210, 50, 40, 0.2);
 }
 
 .bx-field-error,
