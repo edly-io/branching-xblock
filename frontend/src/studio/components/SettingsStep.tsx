@@ -40,14 +40,19 @@ const SettingsStep: React.FC<SettingsStepProps> = ({
       <Form.Group className="bx-field">
         <Form.Label className="bx-field__label">
           {intl.formatMessage(studioMessages.displayName)}
+          <span className="bx-required" aria-hidden="true">*</span>
         </Form.Label>
         <Form.Control
           type="text"
           name="display_name"
-          className="bx-input"
+          aria-required="true"
+          className={`bx-input${validation.settingsFieldErrors.display_name ? " is-error" : ""}`}
           value={settings.display_name}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateField("display_name", e.target.value)}
         />
+        {validation.settingsFieldErrors.display_name && (
+          <div className="bx-field-error">{validation.settingsFieldErrors.display_name}</div>
+        )}
       </Form.Group>
 
       <Form.Checkbox

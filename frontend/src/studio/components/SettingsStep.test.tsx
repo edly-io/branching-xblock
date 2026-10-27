@@ -45,4 +45,16 @@ describe("SettingsStep", () => {
     const { container } = render(<SettingsStep {...baseProps} />);
     expect(container.querySelector("[data-role='authoring-help']")).toBeNull();
   });
+
+  it("highlights display name and shows its field error", () => {
+    const { container } = render(
+      <SettingsStep
+        {...baseProps}
+        validation={{ ...baseProps.validation, settingsFieldErrors: { display_name: "Display name is required." } }}
+      />
+    );
+
+    expect(container.querySelector(".bx-input.is-error input[name='display_name']")).not.toBeNull();
+    expect(screen.getByText("Display name is required.")).toBeInTheDocument();
+  });
 });

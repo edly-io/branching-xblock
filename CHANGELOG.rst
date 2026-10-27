@@ -17,7 +17,7 @@ Unreleased
 Added
 =====
 
-* Nodes have an optional plain-text title, shown as a heading above the content.
+* Nodes have a plain-text title, shown as a heading above the content.
 * Nodes have an optional outcome ("Good choice" or "Try again"). An outcome
   node shows a status mark and the learner's last choice, and a "Try again"
   node turns the Go Back button into "Back to the scenario".
@@ -32,6 +32,9 @@ Changed
 
 * The learner's choices are recorded with scoring off too, so outcome nodes
   can show them.
+* Display name, node title, node content and choice text are required. Studio
+  save and JSON import reject them when blank, and Studio highlights each
+  missing field.
 
 Fixed
 =====

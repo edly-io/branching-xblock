@@ -82,6 +82,7 @@ def test_studio_submit_creates_scenario(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "First node",
                 "media": {"type": "image", "url": ""},
                 "left_image_url": "http://img",
@@ -91,6 +92,7 @@ def test_studio_submit_creates_scenario(rf, block):
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "Second node",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -126,6 +128,7 @@ def test_studio_submit_computes_max_score_from_best_path(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [
@@ -136,6 +139,7 @@ def test_studio_submit_computes_max_score_from_best_path(rf, block):
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "A",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to End1", "target_node_id": "temp-4", "score": 30}],
@@ -143,6 +147,7 @@ def test_studio_submit_computes_max_score_from_best_path(rf, block):
             },
             {
                 "id": "temp-3",
+                "title": "Title",
                 "content": "B",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to End2", "target_node_id": "temp-5", "score": 15}],
@@ -150,6 +155,7 @@ def test_studio_submit_computes_max_score_from_best_path(rf, block):
             },
             {
                 "id": "temp-4",
+                "title": "Title",
                 "content": "End 1",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -157,6 +163,7 @@ def test_studio_submit_computes_max_score_from_best_path(rf, block):
             },
             {
                 "id": "temp-5",
+                "title": "Title",
                 "content": "End 2",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -180,6 +187,7 @@ def test_studio_submit_rejects_invalid_choice_score(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to B", "target_node_id": "temp-2", "score": "1.5"}],
@@ -187,6 +195,7 @@ def test_studio_submit_rejects_invalid_choice_score(rf, block):
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "End",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -213,6 +222,7 @@ def test_studio_submit_normalizes_choice_score_from_string(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to B", "target_node_id": "temp-2", "score": "7"}],
@@ -220,6 +230,7 @@ def test_studio_submit_normalizes_choice_score_from_string(rf, block):
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "End",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -332,6 +343,7 @@ def test_studio_submit_round_trips_single_image(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "single_image", "url": "http://example.com/i.jpg", "alt": "A scene"},
                 "choices": [],
@@ -358,6 +370,7 @@ def test_studio_submit_rejects_single_image_without_url(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "single_image", "url": "", "alt": ""},
                 "choices": [{"text": "go", "target_node_id": "temp-2"}],
@@ -365,6 +378,7 @@ def test_studio_submit_rejects_single_image_without_url(rf, block):
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "End",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -390,6 +404,7 @@ def test_studio_submit_persists_enable_reset_activity(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start node",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -413,6 +428,7 @@ def test_studio_submit_persists_grade_ranges(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start node",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -441,6 +457,7 @@ def test_studio_submit_rejects_invalid_grade_ranges(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start node",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -466,6 +483,7 @@ def test_studio_submit_persists_display_name(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "First node",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -489,7 +507,8 @@ def test_studio_submit_preserves_image_only_node(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
-                "content": "",
+                "title": "Title",
+                "content": "Scene",
                 "media": {"type": "image", "url": ""},
                 "left_image_url": "https://example.com/left.png",
                 "right_image_url": "",
@@ -533,6 +552,7 @@ def test_studio_submit_fails_on_invalid_target(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Only node",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "Nowhere", "target_node_id": "does-not-exist"}]
@@ -559,12 +579,14 @@ def test_studio_submit_rejects_cycle(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Node A",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to B", "target_node_id": "temp-2"}],
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "Node B",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to A", "target_node_id": "temp-1"}],
@@ -590,6 +612,7 @@ def test_studio_submit_rejects_self_loop(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Node A",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "loop", "target_node_id": "temp-1"}],
@@ -613,12 +636,14 @@ def test_studio_submit_rejects_missing_choice_destination(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Node A",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "Go somewhere", "target_node_id": "", "score": 10}],
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "Node B",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -641,12 +666,14 @@ def test_studio_submit_rejects_deleting_referenced_node_with_node_action_errors(
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Node A",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to B", "target_node_id": "temp-2", "score": 5}],
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "Node B",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -673,6 +700,7 @@ def test_studio_submit_rejects_image_node_without_any_image_urls(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Node A",
                 "media": {"type": "image", "url": ""},
                 "left_image_url": "",
@@ -694,6 +722,7 @@ def test_studio_submit_rejects_missing_background_alt_text_with_structured_field
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -711,23 +740,39 @@ def test_studio_submit_rejects_missing_background_alt_text_with_structured_field
     assert "background_image_alt_text" in result["field_errors"]["settings_field_errors"]
 
 
+def test_studio_submit_rejects_blank_display_name(rf, block):
+    payload = {
+        "nodes": [{"id": "temp-1", "title": "Title", "content": "Start", "media": {"type": "", "url": ""}, "choices": []}],
+        "display_name": "   ",
+    }
+    req = rf.post("/", data=json.dumps(payload), content_type="application/json")
+    resp = block.studio_submit(req)
+    result = json.loads(resp.body.decode("utf-8"))
+
+    assert result["result"] == "error"
+    assert result["field_errors"]["settings_field_errors"]["display_name"] == "Display name is required."
+
+
 def test_studio_submit_accepts_acyclic_graph(rf, block):
     payload = {
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "Node A",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to B", "target_node_id": "temp-2"}],
             },
             {
                 "id": "temp-2",
+                "title": "Title",
                 "content": "Node B",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to C", "target_node_id": "temp-3"}],
             },
             {
                 "id": "temp-3",
+                "title": "Title",
                 "content": "Node C",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -748,6 +793,7 @@ def test_studio_submit_handles_non_string_node_id(rf, block):
         "nodes": [
             {
                 "id": 123,
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -1197,12 +1243,14 @@ def test_import_nodes_success(rf, block):
         "nodes": [
             {
                 "id": "start",
+                "title": "Title",
                 "content": "Hello",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "Next", "target_node_id": "end", "score": 42}],
             },
             {
                 "id": "end",
+                "title": "Title",
                 "content": "Goodbye",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -1240,7 +1288,7 @@ def test_import_nodes_rejects_missing_nodes_key(rf, block):
 def test_import_nodes_rejects_too_many_nodes(rf, block):
     payload = {
         "nodes": [
-            {"id": f"n{i}", "content": f"Node {i}", "media": {"type": "", "url": ""}, "choices": []}
+            {"id": f"n{i}", "title": "Title", "content": f"Node {i}", "media": {"type": "", "url": ""}, "choices": []}
             for i in range(31)
         ]
     }
@@ -1257,6 +1305,7 @@ def test_import_nodes_rejects_missing_target(rf, block):
         "nodes": [
             {
                 "id": "start",
+                "title": "Title",
                 "content": "Hello",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "Go", "target_node_id": "nonexistent"}],
@@ -1276,12 +1325,14 @@ def test_import_nodes_rejects_cycle(rf, block):
         "nodes": [
             {
                 "id": "a",
+                "title": "Title",
                 "content": "Node A",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to B", "target_node_id": "b"}],
             },
             {
                 "id": "b",
+                "title": "Title",
                 "content": "Node B",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "to A", "target_node_id": "a"}],
@@ -1299,8 +1350,8 @@ def test_import_nodes_rejects_cycle(rf, block):
 def test_import_nodes_rejects_duplicate_ids(rf, block):
     payload = {
         "nodes": [
-            {"id": "a", "content": "First", "media": {"type": "", "url": ""}, "choices": []},
-            {"id": "a", "content": "Duplicate", "media": {"type": "", "url": ""}, "choices": []},
+            {"id": "a", "title": "Title", "content": "First", "media": {"type": "", "url": ""}, "choices": []},
+            {"id": "a", "title": "Title", "content": "Duplicate", "media": {"type": "", "url": ""}, "choices": []},
         ]
     }
     req = rf.post("/", data=json.dumps(payload), content_type="application/json")
@@ -1316,12 +1367,14 @@ def test_import_nodes_rejects_invalid_score(rf, block):
         "nodes": [
             {
                 "id": "a",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "Go", "target_node_id": "b", "score": 150}],
             },
             {
                 "id": "b",
+                "title": "Title",
                 "content": "End",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -1341,6 +1394,7 @@ def test_import_nodes_sanitizes_html_content(rf, block):
         "nodes": [
             {
                 "id": "start",
+                "title": "Title",
                 "content": '<p>Hello</p><script>alert("xss")</script>',
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -1361,6 +1415,7 @@ def test_import_nodes_sanitizes_html_hint(rf, block):
         "nodes": [
             {
                 "id": "start",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -1386,6 +1441,7 @@ def test_studio_submit_sanitizes_html_hint(rf, block):
         "nodes": [
             {
                 "id": "temp-1",
+                "title": "Title",
                 "content": "First node",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -1413,6 +1469,7 @@ def test_import_nodes_accepts_non_string_hint(rf, block, bad_hint):
         "nodes": [
             {
                 "id": "start",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -1521,12 +1578,14 @@ def test_import_nodes_recomputes_max_score(rf, block):
         "nodes": [
             {
                 "id": "s",
+                "title": "Title",
                 "content": "Start",
                 "media": {"type": "", "url": ""},
                 "choices": [{"text": "Go", "target_node_id": "e", "score": 75}],
             },
             {
                 "id": "e",
+                "title": "Title",
                 "content": "End",
                 "media": {"type": "", "url": ""},
                 "choices": [],
@@ -1717,7 +1776,7 @@ def test_studio_submit_round_trips_title_and_outcome(rf, block):
     payload = {
         "nodes": [
             {"id": "temp-1", "title": "  Good choice ", "content": "Well done", "outcome": "positive", "choices": []},
-            {"id": "temp-2", "title": "", "content": "Hmm", "outcome": "bogus", "choices": []},
+            {"id": "temp-2", "title": "Hmm", "content": "Hmm", "outcome": "bogus", "choices": []},
         ],
         "enable_undo": False,
         "enable_scoring": False,
@@ -1728,7 +1787,35 @@ def test_studio_submit_round_trips_title_and_outcome(rf, block):
     assert result["result"] == "success"
     first, second = block.scenario_data["nodes"].values()
     assert (first["title"], first["outcome"]) == ("Good choice", "positive")
-    assert (second["title"], second["outcome"]) == ("", "")
+    assert (second["title"], second["outcome"]) == ("Hmm", "")
+
+
+def test_studio_submit_requires_title_content_and_choice_text(rf, block):
+    payload = {
+        "nodes": [
+            {"id": "temp-1", "title": " ", "content": "", "choices": [{"text": "", "target_node_id": "temp-2"}]},
+            {"id": "temp-2", "title": "End", "content": "Done", "choices": []},
+        ],
+    }
+    req = rf.post("/", data=json.dumps(payload), content_type="application/json")
+    result = json.loads(block.studio_submit(req).body.decode("utf-8"))
+
+    assert result["result"] == "error"
+    assert result["field_errors"]["node_input_errors"] == {
+        "temp-1": {
+            "title": "Title is required.",
+            "content": "Content is required.",
+            "choiceTextByIndex": {"0": "Choice text is required."},
+        },
+    }
+
+
+def test_import_nodes_rejects_missing_title(rf, block):
+    payload = {"nodes": [{"id": "a", "content": "Start", "choices": []}]}
+    req = rf.post("/", data=json.dumps(payload), content_type="application/json")
+    result = json.loads(block.import_nodes(req).body.decode("utf-8"))
+
+    assert result == {"success": False, "error": "Title is required."}
 
 
 def test_last_choice_text_is_recorded_without_scoring(rf, block):
