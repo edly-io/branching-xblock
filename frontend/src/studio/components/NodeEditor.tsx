@@ -40,10 +40,13 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
   const noBranches = Boolean(node.no_branches) && !hasChoices;
 
   const nodeFieldErrors = validation.nodeFieldErrors[node.id] || {};
+  const titleError = (nodeFieldErrors.title as string) || "";
+  const contentError = (nodeFieldErrors.content as string) || "";
   const leftImageUrlError = (nodeFieldErrors.left_image_url as string) || "";
   const singleImageUrlError = (nodeFieldErrors.single_image_url as string) || "";
   const choiceDestinationErrors = (nodeFieldErrors.choiceDestinationByIndex as Record<string, string>) || {};
   const choiceScoreErrors = (nodeFieldErrors.choiceScoreByIndex as Record<string, string>) || {};
+  const choiceTextErrors = (nodeFieldErrors.choiceTextByIndex as Record<string, string>) || {};
 
   const nodeOptions = allNodes
     .filter((n) => !n.pending_delete)
@@ -82,28 +85,34 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
       <Form.Group className="bx-field">
         <Form.Label className="bx-field__label">
           {intl.formatMessage(studioMessages.nodeTitle)}
+          <span className="bx-required" aria-hidden="true">*</span>
         </Form.Label>
         <Form.Control
           type="text"
-          className="bx-input"
+          aria-required="true"
+          className={`bx-input${titleError ? " is-error" : ""}`}
           data-role="node-title"
           value={node.title}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onUpdateField(node.id, "title", e.target.value)}
         />
+        {titleError && <div className="bx-field-error">{titleError}</div>}
         <div className="bx-help">{intl.formatMessage(studioMessages.nodeTitleHelp)}</div>
       </Form.Group>
 
       <Form.Group className="bx-field">
         <Form.Label className="bx-field__label">
           {intl.formatMessage(studioMessages.content)}
+          <span className="bx-required" aria-hidden="true">*</span>
         </Form.Label>
         <Form.Control
           as="textarea"
-          className="bx-textarea"
+          aria-required="true"
+          className={`bx-textarea${contentError ? " is-error" : ""}`}
           data-role="node-content"
           value={node.content}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onUpdateField(node.id, "content", e.target.value)}
         />
+        {contentError && <div className="bx-field-error">{contentError}</div>}
       </Form.Group>
 
       <Form.Group className="bx-field">
@@ -316,6 +325,7 @@ const NodeEditor: React.FC<NodeEditorProps> = ({
               choice={choice}
               index={i}
               nodeOptions={nodeOptions}
+              textError={choiceTextErrors[String(i)] || ""}
               destinationError={choiceDestinationErrors[String(i)] || ""}
               scoreError={choiceScoreErrors[String(i)] || ""}
               onChange={(choiceIndex, field, value) => onChangeChoice(node.id, choiceIndex, field, value)}

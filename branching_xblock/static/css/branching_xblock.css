@@ -77,7 +77,7 @@
     border-radius: 0.5rem;
 }
 
-.branching-scenario .bx-image-composite__bg {
+.branching-scenario .node-media .bx-image-composite__bg {
     position: absolute;
     inset: 0;
     width: 100%;

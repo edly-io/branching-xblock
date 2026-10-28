@@ -9,6 +9,7 @@ interface ChoiceRowProps {
   choice: DraftChoice;
   index: number;
   nodeOptions: Array<{ id: string; label: string }>;
+  textError: string;
   destinationError: string;
   scoreError: string;
   onChange: (choiceIndex: number, field: string, value: unknown) => void;
@@ -19,6 +20,7 @@ const ChoiceRow: React.FC<ChoiceRowProps> = ({
   choice,
   index,
   nodeOptions,
+  textError,
   destinationError,
   scoreError,
   onChange,
@@ -31,13 +33,16 @@ const ChoiceRow: React.FC<ChoiceRowProps> = ({
       <div className="choice-col choice-col--text">
         <Form.Label className="choice-col__label">
           {intl.formatMessage(studioMessages.choiceText)}
+          <span className="bx-required" aria-hidden="true">*</span>
         </Form.Label>
         <Form.Control
-          className="choice-text"
+          aria-required="true"
+          className={`choice-text${textError ? " is-error" : ""}`}
           value={choice.text}
           placeholder={intl.formatMessage(studioMessages.choiceTextPlaceholder)}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(index, "text", e.target.value)}
         />
+        {textError && <div className="choice-field-error">{textError}</div>}
       </div>
       <div className="choice-col choice-col--score">
         <Form.Label className="choice-col__label">

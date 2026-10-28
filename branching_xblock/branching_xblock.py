@@ -434,9 +434,9 @@ class BranchingXBlock(XBlock):
     @staticmethod
     def _node_has_content(node: dict[str, Any]) -> bool:
         """
-        Return True if the node has any meaningful content, media, or choices.
+        Return True if the node has any meaningful title, content, media, or choices.
         """
-        has_content = bool((node.get('content') or '').strip())
+        has_content = bool((node.get('title') or '').strip() or (node.get('content') or '').strip())
         has_media = bool(
             (node.get('media', {}).get('url') or '').strip()
             or (node.get('left_image_url') or '').strip()
@@ -679,6 +679,8 @@ class BranchingXBlock(XBlock):
         grade_ranges = payload.get('grade_ranges', self.grade_ranges)
         grade_ranges_error = self._validate_grade_ranges(grade_ranges)
 
+        if 'display_name' in payload and not str(payload['display_name'] or '').strip():
+            validation_errors["settings_field_errors"]["display_name"] = "Display name is required."
         if background_image_url and not background_image_is_decorative and not background_image_alt_text:
             validation_errors["settings_field_errors"]["background_image_alt_text"] = (
                 "Background image alt text is required unless the image is decorative."
@@ -1274,6 +1276,15 @@ class BranchingXBlock(XBlock):
             if not self._node_has_content(node):
                 continue
 
+            for field_name, label in (("title", "Title"), ("content", "Content")):
+                if not str(node.get(field_name) or '').strip():
+                    self._add_node_field_error(
+                        validation_errors,
+                        node_client_id=node_client_id,
+                        field_name=field_name,
+                        message=f"{label} is required.",
+                    )
+
             media = node.get("media", {})
             media_type = media.get("type")
             left_image_url = (node.get('left_image_url', '') or '').strip()
@@ -1308,6 +1319,14 @@ class BranchingXBlock(XBlock):
                 target_node_id = raw_choice.get('target_node_id', '').strip()
                 if not (text or target_node_id):
                     continue
+                if not text:
+                    self._add_node_indexed_error(
+                        validation_errors,
+                        node_client_id=node_client_id,
+                        field_name="choiceTextByIndex",
+                        index=choice_index,
+                        message="Choice text is required.",
+                    )
 
                 raw_score = raw_choice.get('score', 0)
                 score = self._clean_choice_score(raw_score)

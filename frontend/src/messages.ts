@@ -306,7 +306,7 @@ export const studioMessages = defineMessages({
   },
   nodeTitleHelp: {
     id: "branching.studio.nodeTitleHelp",
-    defaultMessage: "Optional heading shown above the content, e.g. \"How could you respond?\" or \"Good choice\".",
+    defaultMessage: "Heading shown above the content, e.g. \"How could you respond?\" or \"Good choice\".",
   },
   outcome: {
     id: "branching.studio.outcome",
