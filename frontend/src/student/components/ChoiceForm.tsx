@@ -13,9 +13,13 @@ interface ChoiceFormProps {
   // True while a choice is being submitted: a second tap would be applied to
   // the next node and skip it.
   disabled?: boolean;
+  // Told the picked option, so a host footer button can submit it.
+  onSelectionChange?: (choiceIndex: number | null) => void;
 }
 
-const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit, disabled = false }) => {
+const ChoiceForm: React.FC<ChoiceFormProps> = ({
+  choices, nodeId, onSubmit, disabled = false, onSelectionChange,
+}) => {
   const intl = useIntl();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const hasChoices = choices.length > 0;
@@ -23,6 +27,10 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit, disa
   useEffect(() => {
     setSelectedIndex(null);
   }, [nodeId]);
+
+  useEffect(() => {
+    onSelectionChange?.(selectedIndex);
+  }, [selectedIndex, onSelectionChange]);
 
   // A lone choice ("Next", "Continue") has nothing to pick between, so it is
   // just the button that follows it.

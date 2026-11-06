@@ -10,6 +10,7 @@ import ChoiceForm from "./components/ChoiceForm";
 import ActionButtons from "./components/ActionButtons";
 import GradeReport from "./components/GradeReport";
 import TranscriptLink from "./components/TranscriptLink";
+import { useHostFooter, HostFooterAction } from "./useHostFooter";
 
 interface StudentAppProps {
   handlerUrls: StudentHandlerUrls;
@@ -23,6 +24,7 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
   const [error, setError] = useState<string | null>(null);
   const [isReportVisible, setIsReportVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const replaceState = useCallback((newState: StudentInitialState) => {
     setState(newState);
@@ -72,6 +74,39 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
     setIsReportVisible(true);
   }, []);
 
+  const node = state.current_node || (state.start_node_id ? state.nodes[state.start_node_id] : null) || null;
+  const choices = node?.choices || [];
+  const outcome = node?.outcome || "";
+  const canUndo = Boolean(state.enable_undo && state.history.length > 0);
+  const isReportShown = isReportVisible && choices.length === 0 && state.enable_scoring;
+
+  // The step's main button, handed to the host's footer when there is one:
+  // Submit (or the lone choice's own text) on a question, Back to scenario on
+  // a retry outcome. Anything else gives the footer back to the host.
+  let footerAction: HostFooterAction | null = null;
+  if (node && !isReportShown) {
+    if (choices.length === 1) {
+      footerAction = {
+        label: choices[0].text || intl.formatMessage(studentMessages.next),
+        enabled: !loading,
+        run: () => handleSelectChoice(0),
+      };
+    } else if (choices.length > 1) {
+      footerAction = {
+        label: intl.formatMessage(studentMessages.submit),
+        enabled: !loading && selectedIndex !== null,
+        run: () => { if (selectedIndex !== null) { handleSelectChoice(selectedIndex); } },
+      };
+    } else if (outcome === "retry" && canUndo) {
+      footerAction = {
+        label: intl.formatMessage(studentMessages.backToScenario),
+        enabled: !loading,
+        run: handleUndo,
+      };
+    }
+  }
+  useHostFooter(footerAction);
+
   if (loading && !state.current_node) {
     return (
       <div className="branching-scenario">
@@ -79,8 +114,6 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
       </div>
     );
   }
-
-  const node = state.current_node || (state.start_node_id ? state.nodes[state.start_node_id] : null) || null;
 
   if (!node) {
     return (
@@ -96,16 +129,13 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
   const isCompositeImage = media.type === "image";
   const overlayEnabled = Boolean(node.overlay_text) && isCompositeImage;
 
-  const choices = node.choices || [];
   const isLeaf = choices.length === 0;
   const isAtStartNode = node.id === state.start_node_id;
   const showReportButton = isLeaf && state.enable_scoring;
   const showReport = showReportButton && isReportVisible;
   const showReset = Boolean(state.enable_reset_activity && !isAtStartNode);
-  const canUndo = Boolean(state.enable_undo && state.history.length > 0);
   const hasChoices = choices.length > 0;
   const showScore = !showReport && isLeaf && state.enable_scoring;
-  const outcome = node.outcome || "";
   const lastChoiceText = outcome ? state.last_choice_text || "" : "";
   const showTranscript = Boolean(
     (media.type === "audio" || media.type === "video") && node.transcript_url
@@ -150,7 +180,7 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
         )}
 
         {!showReport && (
-          <ChoiceForm choices={choices} nodeId={nodeId} onSubmit={handleSelectChoice} disabled={loading} />
+          <ChoiceForm choices={choices} nodeId={nodeId} onSubmit={handleSelectChoice} disabled={loading} onSelectionChange={setSelectedIndex} />
         )}
 
         <ActionButtons
