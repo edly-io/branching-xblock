@@ -7,20 +7,21 @@ import { Choice } from "../../types";
 interface ChoiceOptionProps {
   choice: Choice;
   index: number;
-  nodeId: string;
+  // Unique per block; also prefixes the option's element id.
+  name: string;
   isSelected: boolean;
   onChange: (index: number) => void;
 }
 
-const ChoiceOption: React.FC<ChoiceOptionProps> = ({ choice, index, nodeId, isSelected, onChange }) => {
+const ChoiceOption: React.FC<ChoiceOptionProps> = ({ choice, index, name, isSelected, onChange }) => {
   const intl = useIntl();
-  const choiceId = `choice-${nodeId || "node"}-${index}`;
+  const choiceId = `${name}-${index}`;
   return (
     <Form.Radio
       className={`choice-option${isSelected ? " is-selected" : ""}`}
       controlClassName="choice-option__input"
       labelClassName="choice-option__text"
-      name="branching-choice"
+      name={name}
       id={choiceId}
       value={index}
       checked={isSelected}

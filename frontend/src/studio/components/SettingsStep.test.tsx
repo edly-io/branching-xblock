@@ -26,6 +26,7 @@ const baseProps = {
   },
   authoringHelpHtml: "",
   onUpdateField: jest.fn(),
+  onChangeGradeRanges: jest.fn(),
 };
 
 describe("SettingsStep", () => {
