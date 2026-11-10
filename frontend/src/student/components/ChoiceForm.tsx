@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useId } from "react";
 import Button from "@openedx/paragon/dist/Button";
 import Form from "@openedx/paragon/dist/Form";
 import { useIntl } from "react-intl";
@@ -9,32 +9,31 @@ import ChoiceOption from "./ChoiceOption";
 interface ChoiceFormProps {
   choices: Choice[];
   nodeId: string;
+  // The picked option. The parent owns it, so a host footer button submits
+  // the same choice the radios show, and clears it when the node changes.
+  selectedIndex: number | null;
+  onSelect: (choiceIndex: number) => void;
   onSubmit: (choiceIndex: number) => void;
   // True while a choice is being submitted: a second tap would be applied to
   // the next node and skip it.
   disabled?: boolean;
-  // Told the picked option, so a host footer button can submit it.
-  onSelectionChange?: (choiceIndex: number | null) => void;
+  // True when the host page's footer shows the submit button instead.
+  hideSubmit?: boolean;
 }
 
 const ChoiceForm: React.FC<ChoiceFormProps> = ({
-  choices, nodeId, onSubmit, disabled = false, onSelectionChange,
+  choices, nodeId, selectedIndex, onSelect, onSubmit, disabled = false, hideSubmit = false,
 }) => {
   const intl = useIntl();
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const radioName = useId();
   const hasChoices = choices.length > 0;
-
-  useEffect(() => {
-    setSelectedIndex(null);
-  }, [nodeId]);
-
-  useEffect(() => {
-    onSelectionChange?.(selectedIndex);
-  }, [selectedIndex, onSelectionChange]);
 
   // A lone choice ("Next", "Continue") has nothing to pick between, so it is
   // just the button that follows it.
   if (choices.length === 1) {
+    if (hideSubmit) {
+      return null;
+    }
     return (
       <div className="choices choices--single" data-role="choices">
         <Button
@@ -73,12 +72,13 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({
               choice={choice}
               index={idx}
               nodeId={nodeId}
+              name={radioName}
               isSelected={selectedIndex === idx}
-              onChange={setSelectedIndex}
+              onChange={onSelect}
             />
           ))}
         </div>
-        {hasChoices && (
+        {hasChoices && !hideSubmit && (
           <Button
             type="submit"
             variant="primary"

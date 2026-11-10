@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface HostFooterAction {
   label: string;
@@ -6,15 +6,34 @@ export interface HostFooterAction {
   run: () => void;
 }
 
+/** Origin of the page embedding this block, or null when it is not in an iframe. */
+export function hostOrigin(): string | null {
+  if (window.parent === window || !document.referrer) {
+    return null;
+  }
+  try {
+    return new URL(document.referrer).origin;
+  } catch (e) {
+    return null;
+  }
+}
+
 /**
  * Hand the current step's main button (Submit, Back to scenario) to a host
  * page that shows its own sticky footer button, such as the Uber Learn app.
  *
  * Posts `plugin.footerAction` with `{ label, enabled }`, or a null payload to
- * give the footer back, and runs the action when the host posts
- * `uber.footerActionClicked`. A no-op when the block is not in an iframe.
+ * give the footer back. The host answers `uber.footerActionAccepted`, and from
+ * then on this returns true so the block hides its own copy of the button;
+ * until then the block keeps it, so a host that missed the post leaves the
+ * learner a way forward. `uber.footerActionClicked` runs the action.
+ * Messages go to, and are only accepted from, the embedding page's origin.
+ *
+ * The messages carry no block id, so the host has one footer per unit:
+ * content rule, at most one branching scenario per unit.
  */
-export function useHostFooter(action: HostFooterAction | null): void {
+export function useHostFooter(action: HostFooterAction | null): boolean {
+  const [accepted, setAccepted] = useState(false);
   const runRef = useRef<(() => void) | null>(null);
   runRef.current = action && action.enabled ? action.run : null;
 
@@ -22,32 +41,34 @@ export function useHostFooter(action: HostFooterAction | null): void {
   const enabled = Boolean(action && action.enabled);
 
   useEffect(() => {
-    if (window.parent === window) {
-      return undefined;
+    const origin = hostOrigin();
+    if (origin) {
+      window.parent.postMessage(
+        { type: "plugin.footerAction", payload: label ? { label, enabled } : null },
+        origin,
+      );
     }
-    window.parent.postMessage(
-      { type: "plugin.footerAction", payload: label ? { label, enabled } : null },
-      "*",
-    );
-    return undefined;
   }, [label, enabled]);
 
   useEffect(() => {
-    if (window.parent === window) {
+    const origin = hostOrigin();
+    if (!origin) {
       return undefined;
     }
     const onMessage = (event: MessageEvent) => {
-      if (event.source !== window.parent) {
+      if (event.source !== window.parent || event.origin !== origin) {
         return;
       }
-      if ((event.data as { type?: unknown } | null)?.type === "uber.footerActionClicked") {
+      const type = (event.data as { type?: unknown } | null)?.type;
+      if (type === "uber.footerActionAccepted") {
+        setAccepted(true);
+      } else if (type === "uber.footerActionClicked") {
         runRef.current?.();
       }
     };
     window.addEventListener("message", onMessage);
-    return () => {
-      window.removeEventListener("message", onMessage);
-      window.parent.postMessage({ type: "plugin.footerAction", payload: null }, "*");
-    };
+    return () => window.removeEventListener("message", onMessage);
   }, []);
+
+  return accepted;
 }

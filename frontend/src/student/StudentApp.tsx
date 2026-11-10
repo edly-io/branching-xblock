@@ -12,6 +12,10 @@ import GradeReport from "./components/GradeReport";
 import TranscriptLink from "./components/TranscriptLink";
 import { useHostFooter, HostFooterAction } from "./useHostFooter";
 
+// Longest lone-choice text used as the host footer label; the host cuts
+// longer labels mid-word, so those fall back to "Next".
+export const FOOTER_LABEL_MAX_LENGTH = 40;
+
 interface StudentAppProps {
   handlerUrls: StudentHandlerUrls;
   initial_state: StudentInitialState;
@@ -28,6 +32,9 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
 
   const replaceState = useCallback((newState: StudentInitialState) => {
     setState(newState);
+    // Cleared in the same render as the new node, so the footer never offers
+    // to submit the old node's pick.
+    setSelectedIndex(null);
     setLoading(false);
     setIsReportVisible(false);
     setError(null);
@@ -87,7 +94,9 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
   if (node && !isReportShown) {
     if (choices.length === 1) {
       footerAction = {
-        label: choices[0].text || intl.formatMessage(studentMessages.next),
+        label: choices[0].text && choices[0].text.length <= FOOTER_LABEL_MAX_LENGTH
+          ? choices[0].text
+          : intl.formatMessage(studentMessages.next),
         enabled: !loading,
         run: () => handleSelectChoice(0),
       };
@@ -105,7 +114,7 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
       };
     }
   }
-  useHostFooter(footerAction);
+  const hostShowsAction = useHostFooter(footerAction) && footerAction !== null;
 
   if (loading && !state.current_node) {
     return (
@@ -180,7 +189,15 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
         )}
 
         {!showReport && (
-          <ChoiceForm choices={choices} nodeId={nodeId} onSubmit={handleSelectChoice} disabled={loading} onSelectionChange={setSelectedIndex} />
+          <ChoiceForm
+            choices={choices}
+            nodeId={nodeId}
+            selectedIndex={selectedIndex}
+            onSelect={setSelectedIndex}
+            onSubmit={handleSelectChoice}
+            disabled={loading}
+            hideSubmit={hostShowsAction}
+          />
         )}
 
         <ActionButtons
@@ -190,6 +207,7 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
           showReport={showReportButton && !isReportVisible}
           hasChoices={hasChoices && !isReportVisible}
           isRetry={outcome === "retry"}
+          hideBackToScenario={hostShowsAction}
           onUndo={handleUndo}
           onReset={handleReset}
           onShowReport={handleShowReport}

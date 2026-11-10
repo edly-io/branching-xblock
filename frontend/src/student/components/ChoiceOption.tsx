@@ -8,11 +8,13 @@ interface ChoiceOptionProps {
   choice: Choice;
   index: number;
   nodeId: string;
+  // Unique per block, so two blocks on one page keep separate radio groups.
+  name: string;
   isSelected: boolean;
   onChange: (index: number) => void;
 }
 
-const ChoiceOption: React.FC<ChoiceOptionProps> = ({ choice, index, nodeId, isSelected, onChange }) => {
+const ChoiceOption: React.FC<ChoiceOptionProps> = ({ choice, index, nodeId, name, isSelected, onChange }) => {
   const intl = useIntl();
   const choiceId = `choice-${nodeId || "node"}-${index}`;
   return (
@@ -20,7 +22,7 @@ const ChoiceOption: React.FC<ChoiceOptionProps> = ({ choice, index, nodeId, isSe
       className={`choice-option${isSelected ? " is-selected" : ""}`}
       controlClassName="choice-option__input"
       labelClassName="choice-option__text"
-      name="branching-choice"
+      name={name}
       id={choiceId}
       value={index}
       checked={isSelected}

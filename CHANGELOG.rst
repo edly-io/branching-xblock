@@ -26,6 +26,13 @@ Added
 * ``XBLOCK_SETTINGS["BranchingXBlock"]["ISOLATE_STYLES"] = False`` renders the
   learner view in the page, without the shadow root and Paragon, for sites
   whose theme styles the block.
+* In an app that frames the learner view and shows its own sticky footer
+  button (the Uber Learn app), the step's main button moves to that footer:
+  Submit, a lone choice, or "Back to the scenario". The block posts
+  ``plugin.footerAction`` to the embedding page's origin only, keeps its own
+  button until the app answers ``uber.footerActionAccepted``, and runs the
+  action on ``uber.footerActionClicked`` from that origin. A lone choice
+  longer than 40 characters is labelled "Next" in the footer.
 
 Changed
 =======
@@ -42,6 +49,7 @@ Fixed
 * The block's Paragon styles no longer leak into the rest of the page and
   restyle other blocks in Studio and the LMS; the learner view now renders
   inside a Shadow DOM.
+* Two branching blocks on one page no longer share one radio group.
 
 0.3.3 – 2026-09-21
 **********************************************

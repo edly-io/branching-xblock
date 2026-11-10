@@ -10,6 +10,8 @@ interface ActionButtonsProps {
   showReport: boolean;
   hasChoices: boolean;
   isRetry: boolean;
+  // True when the host page's footer shows Back to the scenario instead.
+  hideBackToScenario?: boolean;
   onUndo: () => void;
   onReset: () => void;
   onShowReport: () => void;
@@ -22,17 +24,19 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   showReport,
   hasChoices,
   isRetry,
+  hideBackToScenario = false,
   onUndo,
   onReset,
   onShowReport,
 }) => {
   const intl = useIntl();
-  const showActions = hasChoices || canUndo || hasHistory || showReset || showReport;
+  const showUndo = (canUndo || hasHistory) && !(isRetry && hideBackToScenario);
+  const showActions = hasChoices || showUndo || showReset || showReport;
 
   return (
     <div className="choice-actions" style={{ display: showActions ? "flex" : "none" }}>
       <div className="choice-actions__secondary">
-        {(canUndo || hasHistory) && (
+        {showUndo && (
           <Button
             type="button"
             variant="outline-primary"
