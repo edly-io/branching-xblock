@@ -122,8 +122,49 @@ describe("StudentApp host footer", () => {
     expect(screen.queryByRole("button", { name: "Back to the scenario" })).not.toBeInTheDocument();
   });
 
-  it("hands the footer back on a node without a main button", () => {
+  it("leaves the footer alone on mount when the node has no main button", () => {
     render(<StudentApp handlerUrls={handlerUrls} initial_state={at({ ...retryNode, outcome: "" }, ["start"])} />);
+    expect(footerPosts(parent)).toEqual([]);
+  });
+
+  it("hands the footer back when it reaches a node without a main button", async () => {
+    jest.spyOn(api, "selectChoice").mockResolvedValue(at({ ...retryNode, outcome: "" }, ["q"]));
+    render(<StudentApp handlerUrls={handlerUrls} initial_state={at(question("q", ["Continue"]))} />);
+
+    hostSays(parent, "uber.footerActionClicked");
+    await screen.findByRole("button", { name: "Go Back" });
     expect(footerPosts(parent).at(-1)).toBeNull();
+  });
+
+  it("submits a lone choice on the host click", async () => {
+    const select = jest.spyOn(api, "selectChoice").mockResolvedValue(at(question("q2", ["X", "Y"]), ["q"]));
+    render(<StudentApp handlerUrls={handlerUrls} initial_state={at(question("q", ["Continue"]))} />);
+
+    hostSays(parent, "uber.footerActionClicked");
+    await screen.findByLabelText("X");
+    expect(select).toHaveBeenCalledWith("/s", 0);
+  });
+
+  it("goes back to the scenario on the host click from a retry outcome", async () => {
+    const undo = jest.spyOn(api, "undoChoice").mockResolvedValue(at(question("start", ["A", "B"])));
+    render(<StudentApp handlerUrls={handlerUrls} initial_state={state} />);
+
+    hostSays(parent, "uber.footerActionClicked");
+    await screen.findByLabelText("A");
+    expect(undo).toHaveBeenCalledWith("/u");
+  });
+
+  it("keeps two blocks' radios apart when their node ids match", () => {
+    const initial = at(question("start", ["A", "B"]));
+    render(
+      <>
+        <StudentApp handlerUrls={handlerUrls} initial_state={initial} />
+        <StudentApp handlerUrls={handlerUrls} initial_state={initial} />
+      </>,
+    );
+    const [firstB, secondB] = screen.getAllByLabelText("B");
+    fireEvent.click(secondB);
+    expect(secondB).toBeChecked();
+    expect(firstB).not.toBeChecked();
   });
 });

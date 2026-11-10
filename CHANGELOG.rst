@@ -49,7 +49,8 @@ Fixed
 * The block's Paragon styles no longer leak into the rest of the page and
   restyle other blocks in Studio and the LMS; the learner view now renders
   inside a Shadow DOM.
-* Two branching blocks on one page no longer share one radio group.
+* Two branching blocks on one page no longer share one radio group or
+  element ids, and one that never takes the host footer leaves it alone.
 
 0.3.3 – 2026-09-21
 **********************************************

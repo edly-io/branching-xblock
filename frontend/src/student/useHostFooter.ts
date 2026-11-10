@@ -35,6 +35,7 @@ export function hostOrigin(): string | null {
 export function useHostFooter(action: HostFooterAction | null): boolean {
   const [accepted, setAccepted] = useState(false);
   const runRef = useRef<(() => void) | null>(null);
+  const postedRef = useRef(false);
   runRef.current = action && action.enabled ? action.run : null;
 
   const label = action ? action.label : null;
@@ -42,7 +43,10 @@ export function useHostFooter(action: HostFooterAction | null): boolean {
 
   useEffect(() => {
     const origin = hostOrigin();
-    if (origin) {
+    // A block that never took the footer leaves it alone, so it doesn't wipe
+    // another block's button when it mounts.
+    if (origin && (label || postedRef.current)) {
+      postedRef.current = Boolean(label);
       window.parent.postMessage(
         { type: "plugin.footerAction", payload: label ? { label, enabled } : null },
         origin,

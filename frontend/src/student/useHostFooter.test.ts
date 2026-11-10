@@ -48,6 +48,17 @@ describe("useHostFooter", () => {
     expect(result.current).toBe(false);
   });
 
+  it("posts nothing until it has taken the footer, then hands it back", () => {
+    const { rerender } = renderHook(({ action }) => useHostFooter(action), {
+      initialProps: { action: null as null | { label: string; enabled: boolean; run: () => void } },
+    });
+    expect(parent.postMessage).not.toHaveBeenCalled();
+
+    rerender({ action: { label: "Submit", enabled: true, run: jest.fn() } });
+    rerender({ action: null });
+    expect(parent.postMessage).toHaveBeenLastCalledWith({ type: "plugin.footerAction", payload: null }, HOST);
+  });
+
   it("does nothing outside an iframe", () => {
     unframe();
     const run = jest.fn();

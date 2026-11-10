@@ -25,6 +25,8 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({
   choices, nodeId, selectedIndex, onSelect, onSubmit, disabled = false, hideSubmit = false,
 }) => {
   const intl = useIntl();
+  // Unique per block: two blocks on one page, even with the same node ids,
+  // keep separate radio groups and element ids.
   const radioName = useId();
   const hasChoices = choices.length > 0;
 
@@ -52,7 +54,7 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({
 
   return (
     <div className="choices" data-role="choices">
-      <h3 id={`choice-heading-${nodeId}`} className="choices-heading" data-role="choice-heading" style={{ display: hasChoices ? undefined : "none" }}>
+      <h3 id={`${radioName}-heading`} className="choices-heading" data-role="choice-heading" style={{ display: hasChoices ? undefined : "none" }}>
         {intl.formatMessage(studentMessages.chooseNextStep)}
       </h3>
       <Form
@@ -65,13 +67,12 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({
           }
         }}
       >
-        <div className="choices-list" data-role="choice-list" role="radiogroup" aria-labelledby={`choice-heading-${nodeId}`}>
+        <div className="choices-list" data-role="choice-list" role="radiogroup" aria-labelledby={`${radioName}-heading`}>
           {choices.map((choice, idx) => (
             <ChoiceOption
               key={`${nodeId}-${idx}`}
               choice={choice}
               index={idx}
-              nodeId={nodeId}
               name={radioName}
               isSelected={selectedIndex === idx}
               onChange={onSelect}
