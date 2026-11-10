@@ -1,6 +1,6 @@
 import React from "react";
-import { fireEvent, render, screen } from "../test/helpers";
-import { frameIn, hostSays, unframe } from "../test/hostFrame";
+import { act, fireEvent, render, screen } from "../test/helpers";
+import { HOST, frameIn, hostSays, unframe } from "../test/hostFrame";
 import StudentApp, { FOOTER_LABEL_MAX_LENGTH } from "./StudentApp";
 import * as api from "./api";
 import { StudentInitialState } from "../apiTypes";
@@ -143,6 +143,19 @@ describe("StudentApp host footer", () => {
     hostSays(parent, "uber.footerActionClicked");
     await screen.findByLabelText("X");
     expect(select).toHaveBeenCalledWith("/s", 0);
+  });
+
+  it("submits once when two host clicks arrive before it re-renders", async () => {
+    const select = jest.spyOn(api, "selectChoice").mockResolvedValue(at(question("q2", ["X", "Y"]), ["q"]));
+    render(<StudentApp handlerUrls={handlerUrls} initial_state={at(question("q", ["Continue"]))} />);
+
+    act(() => {
+      ["first", "second"].forEach(() => window.dispatchEvent(new MessageEvent("message", {
+        data: { type: "uber.footerActionClicked" }, source: parent, origin: HOST,
+      })));
+    });
+    await screen.findByLabelText("X");
+    expect(select).toHaveBeenCalledTimes(1);
   });
 
   it("goes back to the scenario on the host click from a retry outcome", async () => {

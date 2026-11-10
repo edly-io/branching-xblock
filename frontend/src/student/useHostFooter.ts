@@ -67,7 +67,12 @@ export function useHostFooter(action: HostFooterAction | null): boolean {
       if (type === "uber.footerActionAccepted") {
         setAccepted(true);
       } else if (type === "uber.footerActionClicked") {
-        runRef.current?.();
+        // Disarm until the next render: a second click already queued (a
+        // double tap on a slow WebView) would otherwise run the action again,
+        // and its choice would land on the node the first one moved to.
+        const run = runRef.current;
+        runRef.current = null;
+        run?.();
       }
     };
     window.addEventListener("message", onMessage);
