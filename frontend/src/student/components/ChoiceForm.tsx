@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useId } from "react";
 import Button from "@openedx/paragon/dist/Button";
 import Form from "@openedx/paragon/dist/Form";
 import { useIntl } from "react-intl";
@@ -9,24 +9,33 @@ import ChoiceOption from "./ChoiceOption";
 interface ChoiceFormProps {
   choices: Choice[];
   nodeId: string;
+  // The picked option. The parent owns it, so a host footer button submits
+  // the same choice the radios show, and clears it when the node changes.
+  selectedIndex: number | null;
+  onSelect: (choiceIndex: number) => void;
   onSubmit: (choiceIndex: number) => void;
   // True while a choice is being submitted: a second tap would be applied to
   // the next node and skip it.
   disabled?: boolean;
+  // True when the host page's footer shows the submit button instead.
+  hideSubmit?: boolean;
 }
 
-const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit, disabled = false }) => {
+const ChoiceForm: React.FC<ChoiceFormProps> = ({
+  choices, nodeId, selectedIndex, onSelect, onSubmit, disabled = false, hideSubmit = false,
+}) => {
   const intl = useIntl();
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  // Unique per block: two blocks on one page, even with the same node ids,
+  // keep separate radio groups and element ids.
+  const radioName = useId();
   const hasChoices = choices.length > 0;
-
-  useEffect(() => {
-    setSelectedIndex(null);
-  }, [nodeId]);
 
   // A lone choice ("Next", "Continue") has nothing to pick between, so it is
   // just the button that follows it.
   if (choices.length === 1) {
+    if (hideSubmit) {
+      return null;
+    }
     return (
       <div className="choices choices--single" data-role="choices">
         <Button
@@ -45,7 +54,7 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit, disa
 
   return (
     <div className="choices" data-role="choices">
-      <h3 id={`choice-heading-${nodeId}`} className="choices-heading" data-role="choice-heading" style={{ display: hasChoices ? undefined : "none" }}>
+      <h3 id={`${radioName}-heading`} className="choices-heading" data-role="choice-heading" style={{ display: hasChoices ? undefined : "none" }}>
         {intl.formatMessage(studentMessages.chooseNextStep)}
       </h3>
       <Form
@@ -58,19 +67,19 @@ const ChoiceForm: React.FC<ChoiceFormProps> = ({ choices, nodeId, onSubmit, disa
           }
         }}
       >
-        <div className="choices-list" data-role="choice-list" role="radiogroup" aria-labelledby={`choice-heading-${nodeId}`}>
+        <div className="choices-list" data-role="choice-list" role="radiogroup" aria-labelledby={`${radioName}-heading`}>
           {choices.map((choice, idx) => (
             <ChoiceOption
               key={`${nodeId}-${idx}`}
               choice={choice}
               index={idx}
-              nodeId={nodeId}
+              name={radioName}
               isSelected={selectedIndex === idx}
-              onChange={setSelectedIndex}
+              onChange={onSelect}
             />
           ))}
         </div>
-        {hasChoices && (
+        {hasChoices && !hideSubmit && (
           <Button
             type="submit"
             variant="primary"
