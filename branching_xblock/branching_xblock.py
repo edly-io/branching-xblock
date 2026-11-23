@@ -1017,10 +1017,12 @@ class BranchingXBlock(XBlock):
             self.history.append(self.current_node_id)
         self.current_node_id = target_node_id
         if self.is_end_node(target_node_id):
-            self.has_completed = True
             if self.enable_scoring:
                 self.publish_grade()
-            self._publish_event("completion", {"completion": 1.0})
+            # A retry outcome is a wrong answer the learner must go back from,
+            # not the end of the scenario.
+            self.has_completed = target_node.get("outcome") != "retry"
+            self._publish_event("completion", {"completion": 1.0 if self.has_completed else 0.0})
 
         return {"success": True, **self._get_state()}
 
@@ -1042,7 +1044,12 @@ class BranchingXBlock(XBlock):
                 self.score_history.pop()
             self.publish_grade()
 
+        # Undo always lands on a question, so the scenario is never complete
+        # here. Published unconditionally: learners who went back before this
+        # was sent still have completion 1.0 stored, and the host's Finish
+        # button reads it.
         self.has_completed = False
+        self._publish_event("completion", {"completion": 0.0})
         return {"success": True, **self._get_state()}
 
     @XBlock.json_handler

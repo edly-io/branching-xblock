@@ -1000,6 +1000,60 @@ def test_undo_choice_reverts_choice_history(rf, block):
     assert block.choice_history == []
 
 
+def test_undo_from_end_node_publishes_zero_completion(rf, block):
+    """Going back from an end node withdraws the completion it published."""
+    _simple_scenario(block)
+    block.enable_undo = True
+    published = []
+    block.runtime.publish = lambda _self, event_type, data: published.append((event_type, data))
+    course_usage = mock.Mock()
+    course_usage.context_key.is_course = True
+    block.scope_ids = mock.Mock(usage_id=course_usage)
+
+    block.select_choice(rf.post("/", data=json.dumps({"choice_index": 0}), content_type="application/json"))
+    published.clear()
+    block.undo_choice(rf.post("/", data=json.dumps({}), content_type="application/json"))
+
+    assert block.has_completed is False
+    assert ("completion", {"completion": 0.0}) in published
+
+
+def test_undo_publishes_zero_completion_even_if_flag_already_cleared(rf, block):
+    """Heals learners whose LMS completion stayed 1.0 after an earlier undo."""
+    _simple_scenario(block)
+    block.enable_undo = True
+    published = []
+    block.runtime.publish = lambda _self, event_type, data: published.append((event_type, data))
+    course_usage = mock.Mock()
+    course_usage.context_key.is_course = True
+    block.scope_ids = mock.Mock(usage_id=course_usage)
+
+    block.select_choice(rf.post("/", data=json.dumps({"choice_index": 0}), content_type="application/json"))
+    block.has_completed = False  # state left by the old undo
+    published.clear()
+    block.undo_choice(rf.post("/", data=json.dumps({}), content_type="application/json"))
+
+    assert ("completion", {"completion": 0.0}) in published
+
+
+def test_retry_end_node_does_not_complete(rf, block):
+    """Landing on a wrong-answer (retry) screen must not mark the scenario complete."""
+    _simple_scenario(block)
+    block.scenario_data["nodes"]["B"]["outcome"] = "retry"
+    published = []
+    block.runtime.publish = lambda _self, event_type, data: published.append((event_type, data))
+    course_usage = mock.Mock()
+    course_usage.context_key.is_course = True
+    block.scope_ids = mock.Mock(usage_id=course_usage)
+
+    block.select_choice(rf.post("/", data=json.dumps({"choice_index": 0}), content_type="application/json"))
+
+    assert block.current_node_id == "B"
+    assert block.has_completed is False
+    assert ("completion", {"completion": 0.0}) in published
+    assert ("completion", {"completion": 1.0}) not in published
+
+
 def test_reset_activity_requires_enable_reset_activity(rf, block):
     block.scenario_data = {
         "nodes": {"start": {"id": "start", "choices": []}},
