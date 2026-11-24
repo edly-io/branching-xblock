@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useIntl } from "react-intl";
 import { studentMessages } from "../messages";
 import { StudentInitialState, StudentHandlerUrls } from "../apiTypes";
@@ -116,6 +116,19 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
   }
   const hostShowsAction = useHostFooter(footerAction) && footerAction !== null;
 
+  // A new node (a choice, Back to scenario, a reset) swaps the content in
+  // place, so bring the learner back to its top. scrollIntoView also scrolls
+  // the host page, which owns the scroll when the LMS sizes our iframe to fit.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const shownNodeId = node?.id;
+  const prevNodeIdRef = useRef(shownNodeId);
+  useEffect(() => {
+    if (prevNodeIdRef.current !== shownNodeId) {
+      prevNodeIdRef.current = shownNodeId;
+      rootRef.current?.scrollIntoView({ block: "start" });
+    }
+  }, [shownNodeId]);
+
   if (loading && !state.current_node) {
     return (
       <div className="branching-scenario">
@@ -151,7 +164,7 @@ const StudentApp: React.FC<StudentAppProps> = ({ handlerUrls, initial_state }) =
   );
 
   return (
-    <div className={`branching-scenario${outcome ? ` branching-scenario--outcome-${outcome}` : ""}`}>
+    <div ref={rootRef} className={`branching-scenario${outcome ? ` branching-scenario--outcome-${outcome}` : ""}`}>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
         {statusMessage}
       </div>
