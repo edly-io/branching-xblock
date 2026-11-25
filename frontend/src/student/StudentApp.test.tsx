@@ -50,6 +50,21 @@ describe("StudentApp outcome node", () => {
     expect(screen.queryByText("You chose")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Go Back" })).toBeInTheDocument();
   });
+
+  it("scrolls back to its top when the node changes, not on mount", async () => {
+    const scroll = jest.fn();
+    Element.prototype.scrollIntoView = scroll;
+    const start = { ...retryNode, id: "start", outcome: "", choices: [{ text: "A", target_node_id: "retry", score: 0 }] };
+    jest.spyOn(api, "undoChoice").mockResolvedValue({ ...state, current_node: start, history: [] } as unknown as StudentInitialState);
+    render(<StudentApp handlerUrls={handlerUrls} initial_state={state} />);
+    expect(scroll).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to the scenario" }));
+    await screen.findByRole("button", { name: "A" });
+
+    expect(scroll).toHaveBeenCalledWith({ block: "start" });
+    jest.restoreAllMocks();
+  });
 });
 
 describe("StudentApp host footer", () => {
